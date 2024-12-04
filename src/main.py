@@ -97,7 +97,9 @@ def evaluate(dl: DataLoader):
     df = mol_evaluator.add_2d_visualizations(df)
     print(f"Valid molecules: {len(df)}")
 
-    print("Saving results...")
+    # TODO: ADD most similar mol image
+
+    print(f"Saving {df.shape[0]} results...")
     mol_evaluator.create_report(df, "./report")
     print("Done!")
 

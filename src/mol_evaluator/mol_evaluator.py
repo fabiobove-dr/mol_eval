@@ -137,7 +137,7 @@ class MolEvaluator:
             # Compute similarity using pre-defined method
             similar, max_similarity, most_similar_sequences = self._compute_similarity(
                 fake_smiles, real_smiles_list, threshold
-            )
+            ).values()
 
             # Ensure that most_similar_sequences is a list, even if it's a single string
             if isinstance(most_similar_sequences, str):
@@ -157,12 +157,13 @@ class MolEvaluator:
 
         if not filtered_data:
             filtered_data = [{
-                'smiles': [],
-                'similar': [],
-                'max_similarity': [],
+                'smiles': "",
+                'similar': False,
+                'max_similarity': 0.0,
                 'most_similar_sequences': [],
                 'matching_cmpd_names': []
             }]
+
         # Create a DataFrame with filtered data
         return pd.DataFrame(filtered_data)
 

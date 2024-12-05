@@ -1,42 +1,32 @@
+import json
+
+from rdkit import Chem
+
 from src.data_loader.data_loader import DataLoader
 from src.mol_evaluator.mol_evaluator import MolEvaluator
 
-LEVENSHTEIN_THRESHOLD = 0.5
-VERY_HIGH_SIMILARITY_THRESHOLD = 0.90
-HIGH_SIMILARITY_THRESHOLD = 0.88
-LOW_SIMILARITY_THRESHOLD = 0.30
-SOLUBILITY_THRESHOLDS = {
-    "VERY_HIGH": -1,
-    "HIGH": 0,
-    "MODERATE": 2,
-    "LOW": 4,
-    "VERY_LOW": float("inf"),
-}
-RELEVANT_DESCRIPTORS = relevant_features = [
-    'fr_Al_COO', 'fr_NH1', 'fr_ketone', 'fr_halogen',
-    'MaxEStateIndex', 'MinEStateIndex', 'MinPartialCharge', 'MaxPartialCharge',
-    'fr_COO', 'fr_Ar_N', 'fr_Ar_OH',
-    'MolWt', 'ExactMolWt', 'HeavyAtomCount', 'NumRotatableBonds',
-    'FractionCSP3', 'LabuteASA', 'RingCount',
-    'MolLogP', 'TPSA',
-    'SlogP_VSA1', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4',
-    'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'SlogP_VSA10',
-    'PEOE_VSA1', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6',
-    'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12',
-    'PEOE_VSA13', 'PEOE_VSA14',
-    'NumAromaticRings', 'NumSaturatedRings', 'fr_benzene', 'fr_bicyclic',
-    'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v',
-    'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'HallKierAlpha'
-]
-TANIMOTO_THRESHOLDS = {
-    "VERY_HIGH": VERY_HIGH_SIMILARITY_THRESHOLD,
-    "HIGH": HIGH_SIMILARITY_THRESHOLD,
-    "MODERATE": LOW_SIMILARITY_THRESHOLD
-}
-VALID_SOLUBILITY_LABELS = ["VERY_HIGH", "HIGH", "MODERATE"]
-VALID_TANIMOTO_LABELS = ["HIGH", "MODERATE", "LOW"]
-MAX_SUBSTRUCTURES_MATCHES = 0
-REPORT_FOLDER = "./report"
+
+def load_config(file_path):
+    with open(file_path, 'r') as file:
+        _config = json.load(file)
+    return _config
+
+
+# Load the configuration
+config = load_config('../examples/configs.json')
+
+# Access configuration variables
+LEVENSHTEIN_THRESHOLD = config["LEVENSHTEIN_THRESHOLD"]
+VERY_HIGH_SIMILARITY_THRESHOLD = config["VERY_HIGH_SIMILARITY_THRESHOLD"]
+HIGH_SIMILARITY_THRESHOLD = config["HIGH_SIMILARITY_THRESHOLD"]
+LOW_SIMILARITY_THRESHOLD = config["LOW_SIMILARITY_THRESHOLD"]
+SOLUBILITY_THRESHOLDS = config["SOLUBILITY_THRESHOLDS"]
+RELEVANT_DESCRIPTORS = config["RELEVANT_DESCRIPTORS"]
+TANIMOTO_THRESHOLDS = config["TANIMOTO_THRESHOLDS"]
+VALID_SOLUBILITY_LABELS = config["VALID_SOLUBILITY_LABELS"]
+VALID_TANIMOTO_LABELS = config["VALID_TANIMOTO_LABELS"]
+MAX_SUBSTRUCTURES_MATCHES = config["MAX_SUBSTRUCTURES_MATCHES"]
+REPORT_FOLDER = config["REPORT_FOLDER"]
 
 
 def load_data(real_smiles_path: str, fake_smiles_path: str):
@@ -98,6 +88,43 @@ def evaluate(dl: DataLoader):
     print("Adding Image...")
     df = mol_evaluator.add_2d_visualizations(df)
     print(f"Valid molecules: {len(df)}")
+
+    # TODO: move this to eval and refactor.
+    print("Adding PatCID Labels...")
+    PATCHID_PATH = "../dataset/patcid_molecule_to_patents_fixed.jsonl"
+    all_smiles = df["smiles"].values.tolist()
+    # Open the file and search for the SMILES query
+    founds = []
+    patents = []
+
+    with open(PATCHID_PATH, "r", encoding="utf-8") as file:
+        for smiles in all_smiles:
+            query_smiles = smiles
+            # Canonicalize SMILES
+            molecule = Chem.MolFromSmiles(query_smiles)
+            query_smiles = Chem.MolToSmiles(molecule)
+            query_mol = Chem.MolFromSmiles(query_smiles)
+            query_inchikey = Chem.MolToInchiKey(query_mol)
+
+            # Search SMILES in PatCID (Based on this naive approach a search takes order-of-magnitude 10 seconds.)
+            # Initialize variables for result and error handling
+            smiles_entry = None
+            file.seek(0)
+            for line in file:
+                if query_inchikey in line or query_smiles in line:
+                    smiles_entry = json.loads(line)  # Assuming the file contains valid JSON on each line
+                    break
+
+            # Check if SMILES was found
+            if smiles_entry is None:
+                founds.append("PATENT_NOT_FOUND")
+                patents.append([])
+            else:
+                founds.append("PATENT_FOUND")
+                patents.append([p["id"] for p in smiles_entry["patents"]])
+
+        df["patents_labels"] = founds
+        df["patents"] = patents
 
     print(f"Saving {df.shape[0]} results...")
     mol_evaluator.create_report(df, REPORT_FOLDER)

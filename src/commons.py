@@ -41,6 +41,8 @@ def timeout(max_timeout):
                 # Catch any other exceptions
                 print(f"An error occurred: {e}")
                 return []  # Gracefully handle other exceptions
+            finally:
+                pool.close()
 
         return func_wrapper
 

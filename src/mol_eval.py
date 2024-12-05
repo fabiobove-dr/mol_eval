@@ -37,57 +37,57 @@ def evaluate(dl: DataLoader, config):
     descriptors = config["RELEVANT_DESCRIPTORS"]
     report_folder = config["REPORT_FOLDER"]
 
-    print("Removing non-molecules...")
+    print("🧑‍🔬 Removing non-molecules...")
     df = mol_evaluator.remove_non_molecules(dl.fake_smiles_df)
-    print(f"Valid molecules: {len(df)}")
+    print(f"🔬 Valid molecules: {len(df)}")
 
-    print("Removing existing smiles...")
+    print("💀 Removing existing smiles...")
     df = mol_evaluator.remove_existing(df, dl.real_smiles_df)
-    print(f"Valid molecules: {len(df)}")
+    print(f"✔️ Valid molecules: {len(df)}")
 
-    print("Removing duplicate smiles...")
+    print("🔄 Removing duplicate smiles...")
     df = mol_evaluator.remove_duplicates(df)
-    print(f"Valid molecules: {len(df)}")
+    print(f"✅ Valid molecules: {len(df)}")
 
-    print("Adding similarity with Levenshtein...")
+    print("🔍 Adding similarity with Levenshtein...")
     df = mol_evaluator.add_levenshtein_similarity(df, dl.real_smiles_df, threshold=thresholds["levenshtein"])
-    print(f"Valid molecules: {len(df)}")
+    print(f"🧑‍🔬 Valid molecules: {len(df)}")
 
-    print("Adding Descriptors...")
+    print("📊 Adding Descriptors...")
     df = mol_evaluator.describe_fake_smiles(df, descriptors)
-    print(f"Valid molecules: {len(df)}")
+    print(f"🧬 Valid molecules: {len(df)}")
 
-    print("Adding Water Solubility Label...")
+    print("💧 Adding Water Solubility Label...")
     df = mol_evaluator.add_solubility_labels(df, thresholds["solubility"])
-    print(f"Valid molecules: {len(df)}")
+    print(f"🌊 Valid molecules: {len(df)}")
 
-    print("Filtering molecules with low solubility...")
+    print("🚫 Filtering molecules with low solubility...")
     df = mol_evaluator.filter_by_solubility(df, thresholds["valid_solubility"])
-    print(f"Valid molecules: {len(df)}")
+    print(f"🌱 Valid molecules: {len(df)}")
 
-    print("Computing substructure matches...")
+    print("🧩 Computing substructure matches...")
     df = mol_evaluator.compute_substructure_matches(df, dl.real_smiles_df)
-    print(f"Valid molecules: {len(df)}")
+    print(f"🔍 Valid molecules: {len(df)}")
 
-    print("Filtering molecules with high substructure matches...")
+    print("⚖️ Filtering molecules with high substructure matches...")
     df = mol_evaluator.filter_by_substructure_matches_number(df, thresholds["max_substructures"])
-    print(f"Valid molecules: {len(df)}")
+    print(f"🔑 Valid molecules: {len(df)}")
 
-    print("Computing Tanimoto Similarity...")
+    print("📏 Computing Tanimoto Similarity...")
     df = mol_evaluator.add_tanimoto_similarity_score_and_label(df, dl.real_smiles_df, thresholds["tanimoto"])
-    print(f"Valid molecules: {len(df)}")
+    print(f"💡 Valid molecules: {len(df)}")
 
-    print("Filtering molecules with high Tanimoto Similarity...")
+    print("🚫 Filtering molecules with high Tanimoto Similarity...")
     df = mol_evaluator.filter_by_tanimoto_label(df, thresholds["valid_tanimoto"])
-    print(f"Valid molecules: {len(df)}")
+    print(f"🧪 Valid molecules: {len(df)}")
 
-    print("Adding Image...")
+    print("🎨 Adding Image...")
     df = mol_evaluator.add_2d_visualizations(df)
-    print(f"Valid molecules: {len(df)}")
+    print(f"🖼️ Valid molecules: {len(df)}")
 
-    print(f"Saving {df.shape[0]} results...")
+    print(f"🛟 Saving {df.shape[0]} results...")
     mol_evaluator.create_report(df, report_folder)
-    print("Done!")
+    print("🥳 Done!")
 
 
 def main():

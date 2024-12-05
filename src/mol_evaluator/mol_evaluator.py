@@ -504,10 +504,15 @@ class MolEvaluator:
         }
 
         results = []
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            for result in executor.map(lambda fake: self.compute_tanimoto(fake, real_fps, thresholds),
-                                       fake_smiles_df["smiles"]):
-                results.append(result)
+        try:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                for result in executor.map(lambda fake: self.compute_tanimoto(fake, real_fps, thresholds),
+                                           fake_smiles_df["smiles"]):
+                    results.append(result)
+        except Exception as e:
+            raise e
+        finally:
+            executor.shutdown(wait=True)
 
         # Convert results into a DataFrame and merge
         results_df = pd.DataFrame(results)

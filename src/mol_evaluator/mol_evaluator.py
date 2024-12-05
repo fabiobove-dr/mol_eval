@@ -20,6 +20,27 @@ class MolEvaluator:
         pass
 
     @staticmethod
+    def remove_duplicates(fake_smiles_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Remove duplicate smiles from the fake dataframe.
+
+        Args:
+            fake_smiles_df (pd.DataFrame): Fake SMILES dataframe.
+
+        Returns:
+            pd.DataFrame: Fake SMILES dataframe with duplicate smiles removed.
+        """
+        if not isinstance(fake_smiles_df, pd.DataFrame):
+            raise TypeError("Input must be a pandas DataFrame.")
+
+        if 'smiles' not in fake_smiles_df.columns:
+            raise ValueError("DataFrame must contain a 'smiles' column.")
+
+        fake_smiles_df = fake_smiles_df.drop_duplicates(subset=['smiles'])
+
+        return fake_smiles_df
+
+    @staticmethod
     def remove_non_molecules(fake_smiles_df: pd.DataFrame) -> pd.DataFrame:
         """
         Remove non-molecules from the fake dataframe.
@@ -37,11 +58,7 @@ class MolEvaluator:
             raise ValueError("DataFrame must contain a 'smiles' column.")
 
         for smiles in fake_smiles_df['smiles']:
-            try:
-                mol = Chem.MolFromSmiles(smiles)
-                if not mol:
-                    fake_smiles_df.drop(fake_smiles_df[fake_smiles_df['smiles'] == smiles].index, inplace=True)
-            except Exception:
+            if not Chem.MolFromSmiles(smiles):
                 fake_smiles_df.drop(fake_smiles_df[fake_smiles_df['smiles'] == smiles].index, inplace=True)
 
         return fake_smiles_df
@@ -359,8 +376,6 @@ class MolEvaluator:
 
         # Generate the 2D image of the molecule
         img = Draw.MolToImage(mol, size=(300, 300))
-        if not as_html:
-            return img, mol
 
         # Save the image to a bytes buffer
         buf = io.BytesIO()
@@ -372,7 +387,9 @@ class MolEvaluator:
 
         # Generate HTML image tag
         img_html = f'<img src="data:image/png;base64,{img_base64}" width="300" height="300">'
-        return img_html, mol
+        return img_html
+
+    import pandas as pd
 
     def add_2d_visualizations(self, fake_smiles_df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -385,15 +402,15 @@ class MolEvaluator:
             pd.DataFrame: DataFrame with an added '2d_image' column containing base64-encoded images.
         """
         images = []
+        most_sim_img = []
         for index, row in fake_smiles_df.iterrows():
             # Generate the 2D image and convert it to base64
-            img, _ = self._visualize_2d(row['smiles'], as_html=False)
-            buffered = io.BytesIO()
-            img.save(buffered, format="PNG")
-            img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-            images.append(f'<img src="data:image/png;base64,{img_str}" width="300" height="300"/>')
-
+            img = self._visualize_2d(row['smiles'], as_html=False)
+            sim_img = self._visualize_2d(row['most_similar_real_mol'], as_html=False)
+            images.append(img)
+            most_sim_img.append(sim_img)
         fake_smiles_df["2d_image"] = images
+        fake_smiles_df["2d_image_most_sim_similes"] = most_sim_img
         return fake_smiles_df
 
     @staticmethod
@@ -415,7 +432,7 @@ class MolEvaluator:
 
         sequence_tanimoto_scores, sequence_dice_scores = [], []
         highest_tanimoto_score = 0
-        most_similar_real_mol = None
+        most_similar_real_mol = ''
 
         for real_smile, fp_real in real_fps.items():
             # Calculate Tanimoto and Dice similarity
@@ -428,7 +445,7 @@ class MolEvaluator:
             # Track the most similar real molecule
             if tanimoto_score > highest_tanimoto_score:
                 highest_tanimoto_score = tanimoto_score
-                most_similar_real_mol = Chem.MolFromSmiles(real_smile)
+                most_similar_real_mol = real_smile
 
         # Calculate average similarity scores
         avg_tanimoto = np.mean(sequence_tanimoto_scores)

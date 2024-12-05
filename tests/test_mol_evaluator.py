@@ -225,7 +225,8 @@ def test_compute_similarity(fake_smile, real_smiles, threshold, expected_similar
         ),
     ],
 )
-def test_add_levenshtein_similarity(fake_smiles_df, original_smiles_df, threshold, expected_filtered_df, test_case_description):
+def test_add_levenshtein_similarity(fake_smiles_df, original_smiles_df, threshold, expected_filtered_df,
+                                    test_case_description):
     """
     Test the add_levenshtein_similarity method.
 
@@ -244,7 +245,7 @@ def test_add_levenshtein_similarity(fake_smiles_df, original_smiles_df, threshol
 
     # Call the method
     result = evaluator.add_levenshtein_similarity(fake_smiles_df=fake_smiles_df, original_smiles_df=original_smiles_df,
-                                      threshold=threshold)
+                                                  threshold=threshold)
 
     # Reset index to avoid index mismatch
     result_reset = result.reset_index(drop=True)
@@ -547,6 +548,31 @@ def test_add_tanimoto_similarity_score_and_label(mock_compute_tanimoto, fake_smi
     assert result_df['max_tanimoto_score'].iloc[0] == expected_score
     assert result_df['avg_tanimoto'].iloc[0] == 0.8
     assert result_df['avg_dice'].iloc[0] == 0.8
+
+
+@pytest.mark.parametrize(
+    "fake_smiles_data,  expected_result, expected_description",
+    [
+        (
+                {'smiles': ['CCO', 'C1CCCCC1']},
+                {'smiles': ['CCO', 'C1CCCCC1']},
+                'Filtering all valid mols',
+        ),
+        (
+                {'smiles': ['NON_VALID', 'FAKE_MOL_SMILES']},
+                {'smiles': []},
+                'Filtering non valid mols',
+        ),
+    ]
+)
+def test_remove_non_mols(fake_smiles_data, expected_result, expected_description):
+    mol_evaluator = MolEvaluator()
+
+    # Call the method
+    result = mol_evaluator.remove_non_molecules(pd.DataFrame(fake_smiles_data))
+
+    # Validate the result
+    pd.testing.assert_frame_equal(result, pd.DataFrame(expected_result), check_dtype=False)
 
 
 if __name__ == "__main__":

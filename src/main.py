@@ -35,6 +35,8 @@ TANIMOTO_THRESHOLDS = {
 }
 VALID_SOLUBILITY_LABELS = ["VERY_HIGH", "HIGH", "MODERATE"]
 VALID_TANIMOTO_LABELS = ["HIGH", "MODERATE", "LOW"]
+MAX_SUBSTRUCTURES_MATCHES = 0
+REPORT_FOLDER = "./report"
 
 
 def load_data(real_smiles_path: str, fake_smiles_path: str):
@@ -58,7 +60,7 @@ def evaluate(dl: DataLoader):
     print(f"Valid molecules: {len(df)}")
 
     print("Removing duplicate smiles...")
-    df = df.drop_duplicates(subset=['smiles'])
+    df = mol_evaluator.remove_duplicates(df)
     print(f"Valid molecules: {len(df)}")
 
     print("Adding similarity with Levenshtein...")
@@ -82,7 +84,7 @@ def evaluate(dl: DataLoader):
     print(f"Valid molecules: {len(df)}")
 
     print("Filtering molecules with high substructure matches...")
-    df = mol_evaluator.filter_by_substructure_matches_number(df, 0)
+    df = mol_evaluator.filter_by_substructure_matches_number(df, MAX_SUBSTRUCTURES_MATCHES)
     print(f"Valid molecules: {len(df)}")
 
     print("Computing Tanimoto Similarity...")
@@ -97,10 +99,8 @@ def evaluate(dl: DataLoader):
     df = mol_evaluator.add_2d_visualizations(df)
     print(f"Valid molecules: {len(df)}")
 
-    # TODO: ADD most similar mol image
-
     print(f"Saving {df.shape[0]} results...")
-    mol_evaluator.create_report(df, "./report")
+    mol_evaluator.create_report(df, REPORT_FOLDER)
     print("Done!")
 
 

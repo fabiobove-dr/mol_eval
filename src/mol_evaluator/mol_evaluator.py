@@ -311,32 +311,37 @@ class MolEvaluator:
         """
         sub_molecules = []
         for patented_molecule in real_mols:
-            matches = []
             try:
                 if fake_mol.HasSubstructMatch(patented_molecule):
-                    matches.append(Chem.MolToSmiles(patented_molecule))
+                    sub_molecules.append(Chem.MolToSmiles(patented_molecule))
                 if patented_molecule.HasSubstructMatch(fake_mol):
-                    matches.append(Chem.MolToSmiles(patented_molecule))
+                    sub_molecules.append(Chem.MolToSmiles(patented_molecule))
             except Exception as _:
                 # Handle any issues during the substructure matching process
-                matches.append([])  # Adding empty list in case of error
+                sub_molecules.append([])  # Adding empty list in case of error
         return sub_molecules
 
-    def compute_substructure_matches(self, fake_smiles_df: pd.DataFrame, real_mols: Chem.Mol) -> pd.DataFrame:
+    def compute_substructure_matches(self, fake_smiles_df: pd.DataFrame, real_smiles_df: pd.DataFrame) -> pd.DataFrame:
         """
         Add substructure matches to the fake SMILES dataframe.
 
         Args:
             fake_smiles_df (pd.DataFrame): Fake SMILES dataframe.
-            real_mols (Chem.Mol): Real molecules.
-
+            real_smiles_df (pd.DataFrame): Real SMILES dataframe.
         Returns:
             pd.DataFrame: Fake SMILES dataframe with substructure matches.
         """
-        fake_smiles_df['substructure_matches'] = fake_smiles_df.apply(
-            lambda row: self._compute_substructure_matches(Chem.MolFromSmiles(row['smiles']), real_mols),
-            axis=1
-        )
+        results = []
+        fake_mols = [Chem.MolFromSmiles(smiles) for smiles in fake_smiles_df['smiles']]
+        real_mols = [Chem.MolFromSmiles(smiles) for smiles in real_smiles_df['smiles']]
+
+        for fake_mol in fake_mols:
+            result = self._compute_substructure_matches(fake_mol, real_mols)
+            # Ensure result is an empty list if None
+            if result is None:
+                result = []
+            results.append(result)
+        fake_smiles_df['substructure_matches'] = results
         return fake_smiles_df
 
     @staticmethod

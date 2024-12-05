@@ -430,44 +430,51 @@ from src.mol_evaluator.mol_evaluator import MolEvaluator  # Adjust the path as n
 
 
 @pytest.mark.parametrize(
-    "fake_smiles, real_smiles, mocked_matches, expected_matches, test_case_description",
+    "fake_smiles_df, real_smiles_list, mocked_matches, expected_df, description",
     [
+        # Test Case 1: Basic substructure matches
         (
-                # Basic case
                 pd.DataFrame({"smiles": ["C1CCCCC1", "CCO", "C1=CC=CC=C1"]}),
                 [Chem.MolFromSmiles("CCO"), Chem.MolFromSmiles("C1=CC=CC=C1")],
-                [[1], [1, 2], [2]],
+                [[1], [1, 2], [2]],  # Mocked substructure matches
                 pd.DataFrame({
                     "smiles": ["C1CCCCC1", "CCO", "C1=CC=CC=C1"],
-                    "substructure_matches": [[1], [1, 2], [2]]
+                    "substructure_matches": [[1], [1, 2], [2]],  # Expected matches
                 }),
-                "Add substructure matches",
+                "Basic case: Add substructure matches",
         ),
     ],
 )
 @patch.object(MolEvaluator, '_compute_substructure_matches')
 def test_compute_substructure_matches(
         mock_compute_matches,
-        fake_smiles,
-        real_smiles,
+        fake_smiles_df,
+        real_smiles_list,
         mocked_matches,
-        expected_matches,
-        test_case_description,
+        expected_df,
+        description,
 ):
     """
-    Test compute_substructure_matches.
+    Test `compute_substructure_matches` method.
     """
     evaluator = MolEvaluator()
 
-    # Mock _compute_substructure_matches to return predefined results
+    # Mock `_compute_substructure_matches` to return predefined results
     mock_compute_matches.side_effect = lambda fake_mol, real_mols: mocked_matches.pop(0)
 
-    # Call the method
-    real_mols = [mol for mol in real_smiles if mol is not None]
-    result = evaluator.compute_substructure_matches(fake_smiles, real_mols)
+    # Convert real smiles into RDKit Mol objects
+    real_mols = [mol for mol in real_smiles_list if mol is not None]
 
-    # Validate the result
-    pd.testing.assert_frame_equal(result, expected_matches, check_dtype=True)
+    # Invoke the method under test
+    result_df = evaluator.compute_substructure_matches(fake_smiles_df, pd.DataFrame(
+        {"smiles": [Chem.MolToSmiles(mol) for mol in real_mols]}))
+
+    # Validate the output DataFrame
+    try:
+        pd.testing.assert_frame_equal(result_df, expected_df, check_dtype=True)
+        print(f"Test passed: {description}")
+    except AssertionError as e:
+        pytest.fail(f"Test failed: {description}\n{e}")
 
 
 @pytest.mark.parametrize(

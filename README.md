@@ -6,11 +6,11 @@
 
 `mol_eval` is a tool for evaluating SMILES data, particularly for distinguishing between real and fake SMILES sequences. It uses configurable thresholds and molecular descriptors to assess similarity and other properties such as solubility.
 
-[![Coverage](https://codecov.io/github/tacclab/bio_dataset_manager/coverage.svg?branch=main)](https://codecov.io/gh/tacclab/bio_dataset_manager)
+[![Coverage](https://codecov.io/github/fabiobove-dr/mol_eval/coverage.svg?branch=main)](https://codecov.io/gh/fabiobove-dr/mol_eval)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/bio_dataset_manager.svg)](https://pypi.org/project/bio_dataset_manager/)
-![Unit Tests](https://github.com/tacclab/bio_dataset_manager/actions/workflows/main.yml/badge.svg)
+![Unit Tests](https://github.com/fabiobove-dr/mol_eval/actions/workflows/codecov.yml/badge.svg)
 [![Powered by TaccLab](https://img.shields.io/badge/powered%20by-TaccLab-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](https://tacclab.org)
-[![License](https://img.shields.io/github/license/tacclab/bio_dataset_manager.svg)](https://github.com/tacclab/bio_dataset_manager/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/fabiobove-dr/mol_eval.svg)](https://github.com/fabiobove-dr/mol_eval/blob/main/LICENSE)
 
 ---
 

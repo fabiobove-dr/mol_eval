@@ -1,6 +1,6 @@
 [project]
 name = "mol_eval"
-version = "0.1.1"
+dynamic = ["version"]
 authors = [
     { name = "Fabio Bove", email = "fabio.bove.dr@gmail.com" }
 ]

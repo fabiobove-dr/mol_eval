@@ -34,13 +34,5 @@
     "VALID_SOLUBILITY_LABELS": ["VERY_HIGH", "HIGH", "MODERATE"],
     "VALID_TANIMOTO_LABELS": ["HIGH", "MODERATE", "LOW"],
     "MAX_SUBSTRUCTURES_MATCHES": 0,
-    "REPORT_FOLDER": "./report",
-    "MONGO_CONNECTION":{
-        "host": "localhost",
-        "port": 27017,
-        "db": "moleculeDB",
-        "collection": "patcid",
-        "username": "user",
-        "password": "password"
-    }
+    "REPORT_FOLDER": "./report"
 }

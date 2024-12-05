@@ -1,6 +1,6 @@
 [project]
 name = "mol_eval"
-dynamic = ["version"]  # This relies on git tags for versioning
+version = "0.1.1"
 authors = [
     { name = "Fabio Bove", email = "fabio.bove.dr@gmail.com" }
 ]
@@ -16,8 +16,6 @@ dependencies = [
     "pandas==2.2.3",
     "tqdm~=4.66.4",
     "scipy~=1.14.0",
-    "biopython~=1.84",
-    "viennarna~=2.6.4",
     "rdkit==2024.3.6",
     "torch==2.3.1",
     "Levenshtein==0.25.1",
@@ -47,3 +45,5 @@ enabled = true
 requires = ["setuptools>=61.0", "setuptools-git-versioning>=2.0,<3", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project.scripts]
+mol_eval = "src.mol_eval:main"

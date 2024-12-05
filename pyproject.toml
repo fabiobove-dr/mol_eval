@@ -46,4 +46,4 @@ requires = ["setuptools>=61.0", "setuptools-git-versioning>=2.0,<3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-mol_eval = "src.mol_eval:main"
+mol_eval = "mol_eval:main"

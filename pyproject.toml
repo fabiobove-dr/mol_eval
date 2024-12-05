@@ -1,0 +1,49 @@
+[project]
+name = "mol_eval"
+dynamic = ["version"]
+authors = [
+    { name = "Fabio Bove", email = "fabio.bove.dr@gmail.com" }
+]
+description = "A tool for the evaluation of molecules smiles"
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["molecule_evaluation", "bioinformatics", "molecular_similarity"]
+
+# Specify the required dependencies with correct versions
+dependencies = [
+    "rdkit",
+    "numpy>=1.0.0,<2.0.0",
+    "pandas==2.2.3",
+    "tqdm~=4.66.4",
+    "scipy~=1.14.0",
+    "rdkit==2024.3.6",
+    "torch==2.3.1",
+    "Levenshtein==0.25.1",
+]
+
+# Define optional dependencies like testing and CUDA support
+[project.optional-dependencies]
+test = [
+    "pytest==7.3.2",
+    "pytest-cov==5.0.0",
+    "pytest-mock==3.14.0",
+    "pytest-md==0.2.0",
+]
+cuda = [
+    "torch==2.3.1+cu118",
+]
+
+[project.urls]
+Homepage = "https://github.com/fabiobove-dr/<REPO_NAME>"
+Issues = "https://github.com/fabiobove-dr/<REPO_NAME>/issues"
+
+# Setuptools git versioning configuration
+[tool.setuptools-git-versioning]
+enabled = true
+
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-git-versioning>=2.0,<3", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+mol_eval = "mol_eval:main"

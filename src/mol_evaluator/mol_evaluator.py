@@ -331,17 +331,26 @@ class MolEvaluator:
         Returns:
             pd.DataFrame: Fake SMILES dataframe with substructure matches.
         """
-        results = []
-        fake_mols = [Chem.MolFromSmiles(smiles) for smiles in fake_smiles_df['smiles']]
+        # Convert real SMILES to RDKit Molecule objects
         real_mols = [Chem.MolFromSmiles(smiles) for smiles in real_smiles_df['smiles']]
 
-        for fake_mol in fake_mols:
-            result = self._compute_substructure_matches(fake_mol, real_mols)
-            # Ensure result is an empty list if None
-            if result is None:
-                result = []
-            results.append(result)
-        fake_smiles_df['substructure_matches'] = results
+        # Initialize the result column
+        fake_smiles_df['substructure_matches'] = None
+
+        for index, fake_smiles in fake_smiles_df.iterrows():
+            fake_mol = Chem.MolFromSmiles(fake_smiles['smiles'])
+            if not fake_mol:
+                fake_smiles_df.at[index, 'substructure_matches'] = []
+                continue
+
+            # Compute matches
+            try:
+                matches = self._compute_substructure_matches(fake_mol, real_mols)
+                fake_smiles_df.at[index, 'substructure_matches'] = matches
+            except Exception as e:
+                fake_smiles_df.at[index, 'substructure_matches'] = []
+                print(f"Error computing substructure matches for index {index}: {e}")
+
         return fake_smiles_df
 
     @staticmethod

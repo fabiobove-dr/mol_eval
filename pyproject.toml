@@ -17,7 +17,6 @@ dependencies = [
     "tqdm~=4.66.4",
     "scipy~=1.14.0",
     "rdkit==2024.3.6",
-    "torch==2.3.1",
     "Levenshtein==0.25.1",
 ]
 
@@ -30,20 +29,22 @@ test = [
     "pytest-md==0.2.0",
 ]
 cuda = [
-    "torch==2.3.1+cu118",
+    "torch[cuda]==2.3.1",
+]
+cpu = [
+    "torch==2.3.1",
 ]
 
 [project.urls]
-Homepage = "https://github.com/fabiobove-dr/<REPO_NAME>"
-Issues = "https://github.com/fabiobove-dr/<REPO_NAME>/issues"
-
-# Setuptools git versioning configuration
-[tool.setuptools-git-versioning]
-enabled = true
+Homepage = "https://github.com/fabiobove-dr/mol_eval"
+Issues = "https://github.com/fabiobove-dr/mol_eval/issues"
 
 [build-system]
-requires = ["setuptools>=61.0", "setuptools-git-versioning>=2.0,<3", "wheel"]
+requires = ["setuptools", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "src/_version.py"
 
 [project.scripts]
 mol_eval = "mol_eval:main"

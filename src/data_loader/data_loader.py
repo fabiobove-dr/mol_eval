@@ -66,6 +66,9 @@ class DataLoader:
         paths = [self.real_smiles_path, self.fake_smiles_path]
         attr_names = ["real_smiles_df", "fake_smiles_df"]
 
+        for path in paths:
+            self._validate_path(path)
+
         def _load_and_set_attr(path: str, attr_name: str):
             """Loads a CSV file and assigns it to the corresponding attribute."""
             setattr(self, attr_name, self.load_csv(path))

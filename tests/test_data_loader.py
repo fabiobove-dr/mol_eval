@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from src.data_loader.data_loader import DataLoader
+from data_loader.data_loader import DataLoader
 
 
 @pytest.fixture

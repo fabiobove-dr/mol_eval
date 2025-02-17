@@ -57,3 +57,8 @@ omit = ["*tests*", "commons.py", "*config.py", "!src/commons.py" ," app.py", "__
 [tool.setuptools.exclude-package-data]
 "*" = ["*"]
 "src" = []
+
+[tool.versioningit.format]
+distance = "{base_version}"
+dirty = "{base_version}"
+distance-dirty = "{base_version}"

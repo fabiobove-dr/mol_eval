@@ -1,6 +1,7 @@
 import argparse
 import json
 
+from _version import __version__
 from data_loader.data_loader import DataLoader
 from mol_evaluator.evaluator import MolEvaluator
 
@@ -97,7 +98,9 @@ def main():
     parser.add_argument("--real_data", required=True, help="Path to the real SMILES data file (CSV).")
     parser.add_argument("--fake_data", required=True, help="Path to the fake SMILES data file (CSV).")
     parser.add_argument("--configs", required=True, help="Path to the configuration JSON file.")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
+    # Parse the arguments
     args = parser.parse_args()
 
     # Load the configuration file

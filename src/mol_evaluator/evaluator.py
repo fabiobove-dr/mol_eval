@@ -11,6 +11,7 @@ from rdkit import RDLogger
 from rdkit.Chem import Descriptors, Draw
 
 from commons import timeout
+from mol_evaluator.mol_types import MolWaterSolubilityLabel
 
 RDLogger.DisableLog('rdApp.*')
 
@@ -249,22 +250,28 @@ class MolEvaluator:
 
         Args:
             smiles (str): SMILES string.
+            thresholds (dict): Dictionary of solubility thresholds.
 
         Returns:
             str: Water solubility label.
         """
         mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            return "INVALID"  # Handle invalid SMILES strings
+
         log_p = Descriptors.MolLogP(mol)
-        if log_p < thresholds["VERY_HIGH"]:
-            return "VERY_HIGH"
-        elif thresholds["VERY_HIGH"] <= log_p < thresholds["HIGH"]:
-            return "HIGH"
-        elif thresholds["HIGH"] <= log_p < thresholds["MODERATE"]:
-            return "MODERATE"
-        elif thresholds["MODERATE"] <= log_p < thresholds["LOW"]:
-            return "LOW"
-        else:
-            return "VERY_LOW"
+
+        # Iterate through threshold levels in order
+        for label in [
+            MolWaterSolubilityLabel.VERY_HIGH,
+            MolWaterSolubilityLabel.HIGH,
+            MolWaterSolubilityLabel.MODERATE,
+            MolWaterSolubilityLabel.LOW,
+        ]:
+            if log_p <= thresholds[label.value]:
+                return label.value
+
+        return MolWaterSolubilityLabel.VERY_LOW.value
 
     def add_solubility_labels(self, fake_smiles_df: pd.DataFrame, thresholds: dict) -> pd.DataFrame:
         """

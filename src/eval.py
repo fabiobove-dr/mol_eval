@@ -2,7 +2,7 @@ import argparse
 import json
 
 from data_loader.data_loader import DataLoader
-from mol_evaluator.mol_evaluator import MolEvaluator
+from mol_evaluator.evaluator import MolEvaluator
 
 
 def load_config(file_path):

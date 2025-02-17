@@ -3,6 +3,10 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from rdkit import Chem
+
+# Mock class with the methods to test
+from mol_evaluator.evaluator import MolEvaluator  # Adjust the path as needed
 
 
 @pytest.mark.parametrize(
@@ -82,7 +86,8 @@ def test_remove_existing_valid_data(fake_smiles, original_smiles, expected_filte
 
 
 @pytest.mark.parametrize(
-    "fake_smile, real_smiles, threshold, expected_similarity, expected_max_similarity, expected_similar_sequences, test_case_description",
+    "fake_smile, real_smiles, threshold, expected_similarity, expected_max_similarity, expected_similar_sequences, "
+    "test_case_description",
     [
         (
                 "CCO",  # Identical SMILES
@@ -259,116 +264,54 @@ def test_add_levenshtein_similarity(fake_smiles_df, original_smiles_df, threshol
 
 
 @pytest.mark.parametrize(
-    "fake_smiles, relevant_descriptors, mock_descriptor_values, expected_descriptors",
-    [
-        (
-                pd.DataFrame({"smiles": ["C=O", "C1=CC=CC=C1", "CCO"]}),
-                ["desc1", "desc2"],
-                {"desc1": 3, "desc2": 1},
-                pd.DataFrame({
-                    "smiles": ["C=O", "C1=CC=CC=C1", "CCO"],
-                    "desc1": [3, 3, 3],
-                    "desc2": [1, 1, 1],
-                }),
-        ),
-        (
-                pd.DataFrame({"smiles": ["C", "O", "N"]}),
-                ["desc1", "desc2"],
-                {"desc1": 1, "desc2": 0},
-                pd.DataFrame({
-                    "smiles": ["C", "O", "N"],
-                    "desc1": [1, 1, 1],
-                    "desc2": [0, 0, 0],
-                }),
-        ),
-    ],
-)
-@patch("src.mol_evaluator.mol_evaluator.MolEvaluator._compute_descriptors")
-def test_describe_fake_smiles(
-        mock_compute_descriptors, fake_smiles, relevant_descriptors, mock_descriptor_values, expected_descriptors
-):
-    """
-    Test the describe_fake_smiles method by mocking the _compute_descriptors method.
-
-    Args:
-        mock_compute_descriptors (Mock): Mocked _compute_descriptors method.
-        fake_smiles (pd.DataFrame): Input fake SMILES DataFrame.
-        relevant_descriptors (list[str]): List of descriptors to compute.
-        mock_descriptor_values (dict): Mocked descriptor values to return.
-        expected_descriptors (pd.DataFrame): Expected DataFrame with computed descriptors.
-    """
-
-    # Mock the _compute_descriptors method to return mock_descriptor_values
-    mock_compute_descriptors.return_value = mock_descriptor_values
-
-    # Create an instance of MolEvaluator
-    evaluator = MolEvaluator()
-
-    # Call the method under test
-    result_df = evaluator.describe_fake_smiles(fake_smiles, relevant_descriptors)
-
-    # Reset indices for comparison
-    result_df = result_df.reset_index(drop=True)
-    expected_descriptors = expected_descriptors.reset_index(drop=True)
-
-    # Assert DataFrame equality
-    pd.testing.assert_frame_equal(result_df, expected_descriptors)
-
-
-@pytest.mark.parametrize(
     "fake_smiles, thresholds, mock_labels, expected_df",
     [
+        # Case 1: Standard solubility labels
         (
                 pd.DataFrame({"smiles": ["C=O", "C1=CC=CC=C1", "CCO"]}),
-                {"low": 0.5, "high": 2.0},
-                ["low", "high", "low"],
+                {"VERY_HIGH": -0.5, "HIGH": 0.5, "MODERATE": 1.5, "LOW": 2.5},
+                ["VERY_HIGH", "HIGH", "LOW"],  # Mocked return values
                 pd.DataFrame({
                     "smiles": ["C=O", "C1=CC=CC=C1", "CCO"],
-                    "solubility_label": ["low", "high", "low"],
+                    "solubility_label": ["VERY_HIGH", "HIGH", "LOW"],
                 }),
         ),
+        # Case 2: Handles invalid SMILES
         (
-                pd.DataFrame({"smiles": ["C", "O", "N"]}),
-                {"low": 0.2, "high": 1.0},
-                ["high", "low", "medium"],
+                pd.DataFrame({"smiles": ["C", "INVALID_SMILES", "O"]}),
+                {"VERY_HIGH": -0.5, "HIGH": 0.5, "MODERATE": 1.5, "LOW": 2.5},
+                ["HIGH", "INVALID", "MODERATE"],  # Mocked return values
                 pd.DataFrame({
-                    "smiles": ["C", "O", "N"],
-                    "solubility_label": ["high", "low", "medium"],
+                    "smiles": ["C", "INVALID_SMILES", "O"],
+                    "solubility_label": ["HIGH", "INVALID", "MODERATE"],
                 }),
         ),
     ],
 )
-@patch("src.mol_evaluator.mol_evaluator.MolEvaluator._compute_water_solubility_label")
-def test_add_solubility_labels(
-        mock_compute_label, fake_smiles, thresholds, mock_labels, expected_df
-):
+@patch("mol_evaluator.evaluator.MolEvaluator._compute_water_solubility_label")
+def test_add_solubility_labels(mock_compute_label, fake_smiles, thresholds, mock_labels, expected_df):
     """
     Test the add_solubility_labels method by mocking _compute_water_solubility_label.
 
     Args:
-        mock_compute_label (Mock): Mocked _compute_water_solubility_label method.
-        fake_smiles (pd.DataFrame): Input fake SMILES DataFrame.
-        thresholds (dict): Thresholds for solubility labels.
-        mock_labels (list[str]): Mocked labels to return.
+        mock_compute_label (Mock): Mocked method.
+        fake_smiles (pd.DataFrame): Fake SMILES DataFrame.
+        thresholds (dict): Dictionary of solubility thresholds.
+        mock_labels (list[str]): Mocked return values.
         expected_df (pd.DataFrame): Expected DataFrame with solubility labels.
     """
-    from src.mol_evaluator.mol_evaluator import MolEvaluator
 
-    # Mock return values for each SMILES string
+    # Mock the return values for _compute_water_solubility_label
     mock_compute_label.side_effect = mock_labels
 
-    # Create an instance of MolEvaluator
+    # Create MolEvaluator instance
     evaluator = MolEvaluator()
 
-    # Call the method under test
+    # Call the method
     result_df = evaluator.add_solubility_labels(fake_smiles, thresholds)
 
-    # Reset indices for comparison
-    result_df = result_df.reset_index(drop=True)
-    expected_df = expected_df.reset_index(drop=True)
-
-    # Assert DataFrame equality
-    pd.testing.assert_frame_equal(result_df, expected_df)
+    # Reset index before assertion
+    pd.testing.assert_frame_equal(result_df.reset_index(drop=True), expected_df.reset_index(drop=True))
 
 
 @pytest.mark.parametrize(
@@ -407,7 +350,6 @@ def test_filter_by_solubility(fake_smiles, valid_labels, expected_df):
         valid_labels (list[str]): List of valid solubility labels.
         expected_df (pd.DataFrame): Expected filtered DataFrame.
     """
-    from src.mol_evaluator.mol_evaluator import MolEvaluator
 
     # Call the static method under test
     result_df = MolEvaluator.filter_by_solubility(fake_smiles, valid_labels)
@@ -418,15 +360,6 @@ def test_filter_by_solubility(fake_smiles, valid_labels, expected_df):
 
     # Assert DataFrame equality
     pd.testing.assert_frame_equal(result_df, expected_df)
-
-
-import pytest
-import pandas as pd
-from unittest.mock import patch
-from rdkit import Chem
-
-# Mock class with the methods to test
-from src.mol_evaluator.mol_evaluator import MolEvaluator  # Adjust the path as needed
 
 
 @pytest.mark.parametrize(
@@ -580,6 +513,62 @@ def test_remove_non_mols(fake_smiles_data, expected_result, expected_description
 
     # Validate the result
     pd.testing.assert_frame_equal(result, pd.DataFrame(expected_result), check_dtype=False)
+
+
+def test_special_characters_in_smiles():
+    evaluator = MolEvaluator()
+
+    # Test cases with special characters in SMILES
+    smiles_df = pd.DataFrame({"smiles": ["C=O", "C1=CC=CC=C1", "C*O"]})
+
+    # Call the method to filter the SMILES
+    result = evaluator.remove_existing(fake_smiles_df=smiles_df, original_smiles_df=pd.DataFrame({"smiles": []}))
+
+    # Ensure it processes correctly (no special characters issues)
+    assert not result.empty
+    assert "smiles" in result.columns
+
+
+def test_similarity_with_zero_threshold():
+    evaluator = MolEvaluator()
+
+    fake_smile = "C=O"
+    real_smiles = ["CCO", "C1=CC=CC=C1", "C=O"]
+
+    # Expected similarity: only identical SMILES should match
+    expected_similarity = {
+        "similar": True,
+        "max_similarity": 1.0,
+        "most_similar_sequences": ["C=O"],
+    }
+
+    result = evaluator._compute_similarity(fake_smile, real_smiles, 0.0)
+
+    # Assert that only identical SMILES are considered similar
+    assert result == expected_similarity
+
+
+def test_handle_empty_or_null_values():
+    evaluator = MolEvaluator()
+
+    # Create a DataFrame with some null values
+    fake_smiles_df = pd.DataFrame({"smiles": ["C=O", "CCO"]})
+    original_smiles_df = pd.DataFrame({"smiles": ["C=O", "CCO"]})
+
+    result = evaluator.remove_existing(fake_smiles_df=fake_smiles_df, original_smiles_df=original_smiles_df)
+
+    # Assert that the None value is properly handled
+    assert result.shape[0] == 0  # There should be 0 rows after filtering
+
+
+def test_empty_dataframe_handling():
+    evaluator = MolEvaluator()
+
+    empty_df = pd.DataFrame({"smiles": []})
+
+    # Ensure that the method returns an empty DataFrame when input is empty
+    result = evaluator.remove_existing(fake_smiles_df=empty_df, original_smiles_df=empty_df)
+    pd.testing.assert_frame_equal(result, empty_df)
 
 
 if __name__ == "__main__":

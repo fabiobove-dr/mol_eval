@@ -11,7 +11,6 @@ keywords = ["molecule_evaluation", "bioinformatics", "molecular_similarity"]
 
 # Specify the required dependencies with correct versions
 dependencies = [
-    "rdkit",
     "numpy>=1.0.0,<2.0.0",
     "pandas==2.2.3",
     "tqdm~=4.66.4",
@@ -40,11 +39,22 @@ Homepage = "https://github.com/fabiobove-dr/mol_eval"
 Issues = "https://github.com/fabiobove-dr/mol_eval/issues"
 
 [build-system]
-requires = ["setuptools", "setuptools_scm"]
+requires = ["setuptools", "versioningit"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
-write_to = "src/_version.py"
+[tool.versioningit]
+# Use the "git" method for the vcs step with no parameters:
+vcs = "pep440"
+
+[tool.versioningit.write]
+file = "src/_version.py"
 
 [project.scripts]
-mol_eval = "mol_eval:main"
+mol_eval = "eval:main"
+
+[tool.coverage.run]
+omit = ["*tests*", "commons.py", "*config.py", "!src/commons.py" ," app.py", "__init__.py"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*"]
+"src" = []

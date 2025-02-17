@@ -1,4 +1,3 @@
-# Molecules Evaluator: A Tool for the Evaluation of Molecule SMILES (a.k.a. `mol_eval`)
 
 ![icon](icon.png)
 
@@ -60,7 +59,20 @@ The configuration file allows you to set various thresholds and other parameters
         "VERY_LOW": "Infinity"
     },
     "RELEVANT_DESCRIPTORS": [
-        "MolWt", "MolLogP", "TPSA"
+        "fr_Al_COO", "fr_NH1", "fr_ketone", "fr_halogen",
+        "MaxEStateIndex", "MinEStateIndex", "MinPartialCharge", "MaxPartialCharge",
+        "fr_COO", "fr_Ar_N", "fr_Ar_OH",
+        "MolWt", "ExactMolWt", "HeavyAtomCount", "NumRotatableBonds",
+        "FractionCSP3", "LabuteASA", "RingCount",
+        "MolLogP", "TPSA",
+        "SlogP_VSA1", "SlogP_VSA2", "SlogP_VSA3", "SlogP_VSA4",
+        "SlogP_VSA5", "SlogP_VSA6", "SlogP_VSA7", "SlogP_VSA8", "SlogP_VSA9", "SlogP_VSA10",
+        "PEOE_VSA1", "PEOE_VSA2", "PEOE_VSA3", "PEOE_VSA4", "PEOE_VSA5", "PEOE_VSA6",
+        "PEOE_VSA7", "PEOE_VSA8", "PEOE_VSA9", "PEOE_VSA10", "PEOE_VSA11", "PEOE_VSA12",
+        "PEOE_VSA13", "PEOE_VSA14",
+        "NumAromaticRings", "NumSaturatedRings", "fr_benzene", "fr_bicyclic",
+        "Chi0", "Chi0n", "Chi0v", "Chi1", "Chi1n", "Chi1v",
+        "Chi2n", "Chi2v", "Chi3n", "Chi3v", "Chi4n", "Chi4v", "HallKierAlpha"
     ],
     "TANIMOTO_THRESHOLDS": {
         "VERY_HIGH": 0.9,

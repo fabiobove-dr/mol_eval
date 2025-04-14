@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from data_loader.data_loader import DataLoader
+from mol_eval.data_loader import DataLoader
 
 
 @pytest.fixture
@@ -21,13 +21,51 @@ def sample_csv(tmp_path):
     return real_smiles_path, fake_smiles_path
 
 
-def test_init(sample_csv):
+def test_init_from_files(sample_csv):
     """Test that the DataLoader initializes correctly."""
     real_smiles_path, fake_smiles_path = sample_csv
-    loader = DataLoader(real_smiles_path=str(real_smiles_path), fake_smiles_path=str(fake_smiles_path))
+    loader = DataLoader(
+        real_smiles_path=str(real_smiles_path), fake_smiles_path=str(fake_smiles_path)
+    )
 
     assert loader.real_smiles_path == str(real_smiles_path)
     assert loader.fake_smiles_path == str(fake_smiles_path)
+    assert loader.real_smiles_df is None
+    assert loader.fake_smiles_df is None
+
+
+def test_init_from_list():
+    """Test that the DataLoader initializes correctly with lists."""
+    real_smiles_list = ["CCO", "C1=CC=CC=C1", "C1CCCCC1"]
+    fake_smiles_list = ["C=O", "C1=CC=CN=C1", "C1CCNCC1"]
+
+    loader = DataLoader(
+        real_smiles_list=real_smiles_list, fake_smiles_list=fake_smiles_list
+    )
+
+    assert loader.real_smiles_list == real_smiles_list
+    assert loader.fake_smiles_list == fake_smiles_list
+    assert loader.real_smiles_df is None
+    assert loader.fake_smiles_df is None
+
+
+def test_init_from_path_and_list(sample_csv):
+    """Test that the DataLoader initializes correctly with both paths and lists."""
+    real_smiles_path, fake_smiles_path = sample_csv
+    real_smiles_list = ["CCO", "C1=CC=CC=C1", "C1CCCCC1"]
+    fake_smiles_list = ["C=O", "C1=CC=CN=C1", "C1CCNCC1"]
+
+    loader = DataLoader(
+        real_smiles_path=str(real_smiles_path),
+        fake_smiles_path=str(fake_smiles_path),
+        real_smiles_list=real_smiles_list,
+        fake_smiles_list=fake_smiles_list,
+    )
+
+    assert loader.real_smiles_path == str(real_smiles_path)
+    assert loader.fake_smiles_path == str(fake_smiles_path)
+    assert loader.real_smiles_list == real_smiles_list
+    assert loader.fake_smiles_list == fake_smiles_list
     assert loader.real_smiles_df is None
     assert loader.fake_smiles_df is None
 
@@ -39,7 +77,9 @@ def test_init(sample_csv):
         ("non_existent.csv", False, FileNotFoundError, "The file does not exist: "),
     ],
 )
-def test_validate_path(sample_csv, tmp_path, path, should_exist, expected_exception, expected_message):
+def test_validate_path(
+    sample_csv, tmp_path, path, should_exist, expected_exception, expected_message
+):
     """Test path validation with different scenarios."""
     real_smiles_path, _ = sample_csv
     loader = DataLoader(real_smiles_path=str(real_smiles_path), fake_smiles_path="")
@@ -67,7 +107,9 @@ def test_validate_path(sample_csv, tmp_path, path, should_exist, expected_except
 def test_load_csv(sample_csv, csv_path, expected_rows, expected_columns):
     """Test loading CSV with different scenarios."""
     real_smiles_path, fake_smiles_path = sample_csv
-    loader = DataLoader(real_smiles_path=str(real_smiles_path), fake_smiles_path=str(fake_smiles_path))
+    loader = DataLoader(
+        real_smiles_path=str(real_smiles_path), fake_smiles_path=str(fake_smiles_path)
+    )
 
     if csv_path == "real_smiles.csv":
         csv_path = real_smiles_path
@@ -91,15 +133,12 @@ def test_load_csv(sample_csv, csv_path, expected_rows, expected_columns):
 def test_get_smiles(sample_csv, getter, expected_first_smile):
     """Test retrieving real and fake SMILES strings."""
     real_smiles_path, fake_smiles_path = sample_csv
-    loader = DataLoader(real_smiles_path=str(real_smiles_path), fake_smiles_path=str(fake_smiles_path))
-
+    loader = DataLoader(
+        real_smiles_path=str(real_smiles_path), fake_smiles_path=str(fake_smiles_path)
+    )
     loader.load_smiles()
     smiles = getattr(loader, getter)()
 
     assert isinstance(smiles, list)
     assert len(smiles) == 3
     assert smiles[0] == expected_first_smile
-
-
-if __name__ == "__main__":
-    pytest.main()

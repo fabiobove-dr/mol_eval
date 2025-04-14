@@ -9,29 +9,35 @@ readme = "README.md"
 license = { file = "LICENSE" }
 keywords = ["molecule_evaluation", "bioinformatics", "molecular_similarity"]
 
-# Specify the required dependencies with correct versions
 dependencies = [
     "numpy>=1.0.0,<2.0.0",
-    "pandas==2.2.3",
-    "tqdm~=4.66.4",
-    "scipy~=1.14.0",
-    "rdkit==2024.3.6",
-    "Levenshtein==0.25.1",
+    "pandas>=2.2.3",
+    "tqdm>=4.66.4",
+    "scipy>=1.14.0",
+    "rdkit>=2024.3.6",
+    "Levenshtein>=0.25.1",
+    "pydantic>=2.11.3"
 ]
 
-# Define optional dependencies like testing and CUDA support
 [project.optional-dependencies]
 test = [
-    "pytest==7.3.2",
-    "pytest-cov==5.0.0",
-    "pytest-mock==3.14.0",
-    "pytest-md==0.2.0",
+    "pytest>=7.3.2",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-md>=0.2.0",
 ]
 cuda = [
     "torch[cuda]==2.3.1",
 ]
 cpu = [
     "torch==2.3.1",
+]
+pre-commit = [
+    "pre-commit>=3.4.0",
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "mypy>=1.5.0",
 ]
 
 [project.urls]
@@ -44,15 +50,18 @@ build-backend = "setuptools.build_meta"
 
 [tool.versioningit]
 vcs = "git"
+default-version = "0.1.0"
 
 [tool.versioningit.write]
-file = "src/_version.py"
+file = "src/mol_eval/version.py"
 
 [project.scripts]
-mol_eval = "eval:main"
+mol_eval = "mol_eval.eval:main"
 
 [tool.coverage.run]
-omit = ["*tests*", "commons.py", "*config.py", "!src/commons.py" ," app.py", "__init__.py"]
+omit = ["*tests*", "logger.py", "eval.py", "commons.py", "*config.py", "!src/commons.py" ," app.py", "__init__.py"]
+source = ["src", "test"]
+
 
 [tool.setuptools.exclude-package-data]
 "*" = ["*"]
@@ -62,3 +71,13 @@ omit = ["*tests*", "commons.py", "*config.py", "!src/commons.py" ," app.py", "__
 distance = "{base_version}"
 dirty = "{base_version}"
 distance-dirty = "{base_version}"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+skip-string-normalization = true
+
+[tool.flake8]
+max-line-length = 120
+ignore = ["E203", "W503"] # E203: Whitespace before ':', W503: Line break before binary operator
+exclude = [".venv", "__init__.py"]

@@ -1,32 +1,45 @@
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 import pandas as pd
+from mol_eval.enums import SmilesData
 
 
 class DataLoader:
     """A class for loading and managing SMILES data.
 
     This class provides methods to load and retrieve real and fake SMILES data
-    from CSV files in parallel.
+    from CSV files or directly from lists.
 
     Attributes:
         real_smiles_path (str): Path to the CSV file containing real SMILES data.
         fake_smiles_path (str): Path to the CSV file containing fake SMILES data.
-        real_smiles_df (pd.DataFrame): Loaded DataFrame of real SMILES data.
+        real_smiles_list (pd.DataFrame): Loaded DataFrame of real SMILES data.
         fake_smiles_df (pd.DataFrame): Loaded DataFrame of fake SMILES data.
     """
 
-    def __init__(self, real_smiles_path: str, fake_smiles_path: str):
-        """Initializes the DataLoader with paths to real and fake SMILES data.
+    def __init__(
+        self,
+        real_smiles_path: str = None,
+        fake_smiles_path: str = None,
+        real_smiles_list: list = None,
+        fake_smiles_list: list = None,
+        smiles_column_name: str = SmilesData.smiles_column_name.value,
+    ):
+        """Initializes the DataLoader with paths to SMILES data or lists.
 
         Args:
-            real_smiles_path (str): Path to the real SMILES data CSV file.
-            fake_smiles_path (str): Path to the fake SMILES data CSV file.
+            real_smiles_path (str, optional): Path to the real SMILES data CSV file.
+            fake_smiles_path (str, optional): Path to the fake SMILES data CSV file.
+            real_smiles_list (list, optional): List of real SMILES strings.
+            fake_smiles_list (list, optional): List of fake SMILES strings.
+            smiles_column_name (str, optional): Column name for SMILES strings in the DataFrame.
         """
+        self.smiles_column_name = smiles_column_name
         self.real_smiles_path = real_smiles_path
         self.fake_smiles_path = fake_smiles_path
+        self.real_smiles_list = real_smiles_list
+        self.fake_smiles_list = fake_smiles_list
         self.real_smiles_df = None
         self.fake_smiles_df = None
 
@@ -59,22 +72,31 @@ class DataLoader:
         return pd.read_csv(path)
 
     def load_smiles(self) -> None:
-        """Loads both real and fake SMILES data into DataFrames in parallel.
+        """Loads both real and fake SMILES data into DataFrames.
 
-        The data is stored in `real_smiles_df` and `fake_smiles_df` attributes.
+        The data is loaded from lists if provided, otherwise from CSV files.
         """
-        paths = [self.real_smiles_path, self.fake_smiles_path]
-        attr_names = ["real_smiles_df", "fake_smiles_df"]
+        if self.real_smiles_list is not None:
+            self.real_smiles_df = pd.DataFrame(
+                {self.smiles_column_name: self.real_smiles_list}
+            )
+        elif self.real_smiles_path is not None:
+            self.real_smiles_df = self.load_csv(self.real_smiles_path)
+        else:
+            raise ValueError(
+                "Either real_smiles_list or real_smiles_path must be provided."
+            )
 
-        for path in paths:
-            self._validate_path(path)
-
-        def _load_and_set_attr(path: str, attr_name: str):
-            """Loads a CSV file and assigns it to the corresponding attribute."""
-            setattr(self, attr_name, self.load_csv(path))
-
-        with ThreadPoolExecutor() as executor:
-            executor.map(_load_and_set_attr, paths, attr_names)
+        if self.fake_smiles_list is not None:
+            self.fake_smiles_df = pd.DataFrame(
+                {self.smiles_column_name: self.fake_smiles_list}
+            )
+        elif self.fake_smiles_path is not None:
+            self.fake_smiles_df = self.load_csv(self.fake_smiles_path)
+        else:
+            raise ValueError(
+                "Either fake_smiles_list or fake_smiles_path must be provided."
+            )
 
     def get_real_smiles(self) -> List[str]:
         """Retrieves a list of real SMILES strings.
@@ -87,7 +109,7 @@ class DataLoader:
         """
         if self.real_smiles_df is None:
             raise ValueError("Real SMILES data has not been loaded yet.")
-        return self.real_smiles_df['smiles'].tolist()
+        return self.real_smiles_df[self.smiles_column_name].tolist()
 
     def get_fake_smiles(self) -> List[str]:
         """Retrieves a list of fake SMILES strings.
@@ -100,4 +122,4 @@ class DataLoader:
         """
         if self.fake_smiles_df is None:
             raise ValueError("Fake SMILES data has not been loaded yet.")
-        return self.fake_smiles_df['smiles'].tolist()
+        return self.fake_smiles_df[self.smiles_column_name].tolist()

@@ -1,46 +1,42 @@
 
 ![icon](icon.png)
 
-## Overview
+# Overview | `mol_eval`
 
 `mol_eval` is a tool for evaluating SMILES data, particularly for distinguishing between real and fake SMILES sequences. It uses configurable thresholds and molecular descriptors to assess similarity and other properties such as solubility.
 
 [![Coverage](https://codecov.io/github/fabiobove-dr/mol_eval/coverage.svg?branch=main)](https://codecov.io/gh/fabiobove-dr/mol_eval)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/mol_eval.svg)](https://pypi.org/project/mol_eval/)
 ![Unit Tests](https://github.com/fabiobove-dr/mol_eval/actions/workflows/codecov.yml/badge.svg)
-[![Powered by TaccLab](https://img.shields.io/badge/powered%20by-TaccLab-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](https://tacclab.org)
+<br>[![Powered by TaccLab](https://img.shields.io/badge/powered%20by-TaccLab-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](https://tacclab.org)
 [![License](https://img.shields.io/github/license/fabiobove-dr/mol_eval.svg)](https://github.com/fabiobove-dr/mol_eval/blob/main/LICENSE)
 
 ---
-
-## Features
-
+# Features
 - **Real vs Fake SMILES Evaluation:** Compare real and synthetic SMILES sequences based on various similarity thresholds.
 - **Similarity Metrics:** Uses Levenshtein distance, Tanimoto coefficient, and molecular descriptors for comparison.
 - **Configurable Analysis:** Easily tweak similarity thresholds, solubility labels, and molecular descriptors through a configuration file.
 - **Reports:** Generate detailed evaluation reports based on the results.
 
 ---
-
-## Installation
-
+# Installation
 To install `mol_eval`, you can use `pip`:
-
 ```bash
 pip install mol_eval
 ```
 
 ---
-## Configuration
-
+# Configuration
 Before running the tool, you'll need to prepare your dataset and configuration file.
 ### Step 1: Prepare Your Dataset Files
 
-    real_data.csv: This file should contain two columns:
-        cmpd_name: The name of the compound.
-        smile: The SMILES string representing the molecule.
-    fake_data.csv: This file should contain one column:
-        smile: The SMILES string of synthetic molecules.
+### `real_data.csv`<br>
+This file should contain two columns:
+  - `cmpd_name`: The name of the compound.
+  - `smile`: The SMILES string representing the molecule.
+### `fake_data.csv`<br>
+This file should contain one column:
+  - `smile`: The SMILES string of synthetic molecules.
 
 ### Step 2: Configuration File (config.json)
 
@@ -92,10 +88,8 @@ The configuration file allows you to set various thresholds and other parameters
 - `Tanimoto` and `Levenshtein`: Fine-tune the thresholds for calculating molecular similarity.
 - `Solubility` Labels: Define the solubility categories based on the solubility values.
 - `Report Folder`: Define where to save evaluation reports.
-
 ---
-### Usage
-
+# Usage
 After installing the package and preparing your dataset and configuration file, you can run the evaluation tool via the command line.
 Run the Evaluation
 
@@ -116,15 +110,31 @@ options:
 ```
 
 ---
-## Report Generation
+# Report Generation
 
-The tool generates a report in the folder specified by REPORT_FOLDER in the configuration file (default is ./report). The report contains detailed information on the evaluation of the SMILES sequences, including similarity metrics, solubility predictions, and substructure matching.
+The tool generates a report in the folder specified by `REPORT_FOLDER` in the configuration file (default is `./report`). 
+The report contains detailed information on the evaluation of the SMILES sequences, including:
+- similarity metrics
+- solubility predictions
+- substructure matching
+- 2d visualizations of the molecules and their most similar counterparts
 
 ---
-## Contributing
+# Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests. Please ensure all tests pass and that the code follows the PEP 8 style guide.
+Contributions are welcome!
+Feel free to open issues or submit pull requests. 
+Please ensure all tests pass and that the code follows the PEP 8 style guide.
+<br>
 
+
+### (More Information coming soon!)
+## pre-commit 
+Add pre-commit hook to run tests before commit
+```bash
+    pre-commit run --all-files
+```
 ---
-## License
+
+# License
 This project is licensed under the terms of the GNU General Public License, Version 3.

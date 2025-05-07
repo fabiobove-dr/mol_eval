@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from rdkit import Chem
+from rdkit.Chem import Descriptors
 
 from mol_eval.data_loader import DataLoader
 from mol_eval.enums import ValidationLabel
@@ -672,9 +673,31 @@ def test_empty_dataframe_handling():
     pd.testing.assert_frame_equal(result, empty_df)
 
 
-# New tests
-def test_extract_thresholds(test_config_data):
+def test_add_qed_score():
+    # Create a sample DataFrame with SMILES strings
+    data = {"smiles": ["CCO", "CC(=O)O", "invalid_smiles"]}
+    df = pd.DataFrame(data)
 
+    # Expected QED scores
+    expected_qed = [
+        Descriptors.qed(Chem.MolFromSmiles("CCO")),
+        Descriptors.qed(Chem.MolFromSmiles("CC(=O)O")),
+        0.0,
+    ]
+
+    # Call the add_qed_score method
+    evaluator = MolEvaluator()
+    result_df = evaluator.add_qed_score(df, smiles_column_name="smiles")
+
+    # Assert that the QED scores are as expected
+    for i, expected in enumerate(expected_qed):
+        if expected is None:
+            assert pd.isna(result_df.loc[i, "qed"])
+        else:
+            assert result_df.loc[i, "qed"] == expected
+
+
+def test_extract_thresholds(test_config_data):
     config = ConfigSchema(**test_config_data)
     config.LEVENSHTEIN_THRESHOLD = 0.5
     config.TANIMOTO_THRESHOLDS = {"HIGH": 0.8, "MODERATE": 0.5}

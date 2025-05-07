@@ -12,7 +12,7 @@ from rdkit.Chem import Descriptors, Draw
 
 from mol_eval.commons import timeout
 from mol_eval.data_loader import DataLoader
-from mol_eval.enums import ValidationLabel, MolWaterSolubilityLabel
+from mol_eval.enums import ValidationLabel, MolWaterSolubilityLabel, SmilesData
 from mol_eval.schemas import ConfigSchema
 
 
@@ -666,6 +666,7 @@ class MolEvaluator:
         df = self._evaluate_substructure_matches(full_df, df, dl, thresholds)
         df = self._evaluate_tanimoto_similarity(full_df, df, dl, thresholds)
         df = self.add_2d_visualizations(df)
+        df = self.add_qed_score(df)
 
         self.create_report(df, full_df, report_folder)
 
@@ -681,6 +682,28 @@ class MolEvaluator:
             "valid_tanimoto": config.VALID_TANIMOTO_LABELS,
             "max_substructures": config.MAX_SUBSTRUCTURES_MATCHES,
         }
+
+    @staticmethod
+    def add_qed_score(
+        df: pd.DataFrame, smiles_column_name: str = SmilesData.smiles_column_name.value
+    ) -> pd.DataFrame:
+        """Compute the QED score for a given SMILES string.
+
+        Args:
+            df (pd.DataFrame): DataFrame containing a 'smiles' column.
+            smiles_column_name (str): Column name for SMILES strings in the DataFrame.
+        Returns:
+            float: Score between 0 (bad molecule) and 1 (good molecule).
+        """
+        df["qed"] = df.apply(
+            lambda row: (
+                Descriptors.qed(Chem.MolFromSmiles(row[smiles_column_name]))
+                if Chem.MolFromSmiles(row[smiles_column_name]) is not None
+                else 0.0
+            ),
+            axis=1,
+        )
+        return df
 
     @staticmethod
     def _evaluate_non_molecules(full_df: pd.DataFrame) -> pd.DataFrame:

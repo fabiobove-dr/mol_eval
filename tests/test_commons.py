@@ -1,8 +1,8 @@
 import time
-from src.mol_eval.commons import timeout
+from mol_eval.commons import timeout
 import pytest
 import json
-from src.mol_eval.commons import load_config_file
+from mol_eval.commons import load_config_file
 from mol_eval.schemas import ConfigSchema
 
 

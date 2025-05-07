@@ -636,7 +636,7 @@ class MolEvaluator:
         # merge the two dataframes to create a report
         merged_df = pd.merge(
             full_fake_smiles_df, valid_fake_smiles_df, on="smiles", how="left"
-        ).drop(columns="Unnamed: 1")
+        )
         merged_df.to_csv(os.path.join(report_folder, "report.csv"), index=False)
 
     def evaluate(self, dl: DataLoader, config: ConfigSchema) -> None:

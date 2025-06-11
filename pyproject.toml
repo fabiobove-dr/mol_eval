@@ -10,13 +10,13 @@ license = { file = "LICENSE" }
 keywords = ["molecule_evaluation", "bioinformatics", "molecular_similarity"]
 
 dependencies = [
-    "numpy>=1.0.0,<2.0.0",
-    "pandas>=2.2.3",
+    "numpy>=2.3.0",
+    "pandas>=2.3.0",
     "tqdm>=4.66.4",
-    "scipy>=1.14.0",
-    "rdkit>=2024.3.6",
-    "Levenshtein>=0.25.1",
-    "pydantic>=2.11.3"
+    "scipy>=1.15.1",
+    "rdkit>=2024.9.4",
+    "Levenshtein>=0.26.0",
+    "pydantic>=2.11.4"
 ]
 
 [project.optional-dependencies]
